@@ -13,7 +13,10 @@ if (MSVC)
     find_package(SDL2 REQUIRED)
     find_library(SPEEX_LDFLAGS libspeexdsp)
 else ()
-    PKG_CHECK_MODULES(SDL2 REQUIRED sdl2)
+    find_package(SDL2 CONFIG)
+    if (NOT SDL2_FOUND)
+        PKG_CHECK_MODULES(SDL2 REQUIRED sdl2)
+    endif ()
     PKG_CHECK_MODULES(SPEEX REQUIRED speexdsp)
 endif ()
 
@@ -47,7 +50,8 @@ ipo_set_target_properties(${PROJECT})
 
 target_link_libraries(${PROJECT} "libopenrct2"
                                  ${SDL2_LDFLAGS}
-                                 ${SPEEX_LDFLAGS})
+                                 ${SPEEX_LDFLAGS}
+                                 SDL2::SDL2main SDL2::SDL2-static)
 target_link_platform_libraries(${PROJECT})
 
 if (NOT DISABLE_OPENGL)
