@@ -263,53 +263,89 @@ file(GLOB DOC_FILES "${ROOT_DIR}/distribution/*.txt")
 list(APPEND DOC_FILES "${ROOT_DIR}/contributors.md"
                       "${ROOT_DIR}/licence.txt")
 
-# CMake does not allow specifying a dependency chain which includes built-in
-# targets, like `install`, so we have to trick it and execute dependency ourselves.
-install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" --build \"${CMAKE_CURRENT_BINARY_DIR}\" --target g2)")
-if (DOWNLOAD_TITLE_SEQUENCES)
-    # If openrct2.parkseq or data/title/ exists, assume all the title sequences are already present
-    install(CODE
-        "if (EXISTS \"\$ENV{DESTDIR}${CMAKE_INSTALL_FULL_DATADIR}/${PROJECT}/title/openrct2.parkseq\" OR EXISTS ${CMAKE_SOURCE_DIR}/data/title/)\n\
-            message(\"Using cached title sequences\")\n\
-        else () \n\
-            file(DOWNLOAD ${TITLE_SEQUENCE_URL} \$ENV{DESTDIR}${CMAKE_INSTALL_FULL_DATADIR}/${PROJECT}/title/title-sequences.zip EXPECTED_HASH SHA1=${TITLE_SEQUENCE_SHA1} SHOW_PROGRESS)\n\
-            execute_process(COMMAND \"${CMAKE_COMMAND}\" -E chdir \$ENV{DESTDIR}${CMAKE_INSTALL_FULL_DATADIR}/${PROJECT}/title/ \"${CMAKE_COMMAND}\" -E tar xf title-sequences.zip)\n\
-            file(REMOVE \$ENV{DESTDIR}${CMAKE_INSTALL_FULL_DATADIR}/${PROJECT}/title/title-sequences.zip)\n\
-        endif ()")
+if (WIN32)
+    # CMake does not allow specifying a dependency chain which includes built-in
+    # targets, like `install`, so we have to trick it and execute dependency ourselves.
+    install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" --build \"${CMAKE_CURRENT_BINARY_DIR}\" --target g2)")
+    if (DOWNLOAD_TITLE_SEQUENCES)
+        # If openrct2.parkseq or data/title/ exists, assume all the title sequences are already present
+        install(CODE
+            "if (EXISTS \"\${CMAKE_INSTALL_PREFIX}/bin/data/title/openrct2.parkseq\" OR EXISTS ${CMAKE_SOURCE_DIR}/data/title/)\n\
+                message(\"Using cached title sequences\")\n\
+            else () \n\
+                file(DOWNLOAD ${TITLE_SEQUENCE_URL} \${CMAKE_INSTALL_PREFIX}/bin/data/title/title-sequences.zip EXPECTED_HASH SHA1=${TITLE_SEQUENCE_SHA1} SHOW_PROGRESS)\n\
+                execute_process(COMMAND \"${CMAKE_COMMAND}\" -E chdir \${CMAKE_INSTALL_PREFIX}/bin/data/title/ \"${CMAKE_COMMAND}\" -E tar xf title-sequences.zip)\n\
+                file(REMOVE \${CMAKE_INSTALL_PREFIX}/bin/data/title/title-sequences.zip)\n\
+            endif ()")
+    endif ()
+    if (DOWNLOAD_OBJECTS)
+        # If rct2.wtrcyan.json or data/object/ exists, assume all the objects are already present
+        install(CODE
+            "if (EXISTS \"\${CMAKE_INSTALL_PREFIX}/bin/data/object/rct2/water/rct2.wtrcyan.json\" OR EXISTS ${CMAKE_SOURCE_DIR}/data/object/)\n\
+                message(\"Using cached objects\")\n\
+            else () \n\
+                file(DOWNLOAD ${OBJECTS_URL} \${CMAKE_INSTALL_PREFIX}/bin/data/object/objects.zip EXPECTED_HASH SHA1=${OBJECTS_SHA1} SHOW_PROGRESS)\n\
+                execute_process(COMMAND \"${CMAKE_COMMAND}\" -E chdir \${CMAKE_INSTALL_PREFIX}/bin/data/object/ \"${CMAKE_COMMAND}\" -E tar xf objects.zip)\n\
+                file(REMOVE \${CMAKE_INSTALL_PREFIX}/bin/data/object/objects.zip)\n\
+            endif ()")
+    endif ()
+    install(TARGETS "libopenrct2" LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+                                  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+    if(NOT DISABLE_GUI)
+        install(TARGETS "openrct2" RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+    endif()
+    install(TARGETS "openrct2-cli" OPTIONAL RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/g2.dat" DESTINATION "${CMAKE_INSTALL_BINDIR}/data")
+    install(DIRECTORY "data/" DESTINATION "${CMAKE_INSTALL_BINDIR}/data")
+else()
+    # CMake does not allow specifying a dependency chain which includes built-in
+    # targets, like `install`, so we have to trick it and execute dependency ourselves.
+    install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" --build \"${CMAKE_CURRENT_BINARY_DIR}\" --target g2)")
+    if (DOWNLOAD_TITLE_SEQUENCES)
+        # If openrct2.parkseq or data/title/ exists, assume all the title sequences are already present
+        install(CODE
+            "if (EXISTS \"\$ENV{DESTDIR}${CMAKE_INSTALL_FULL_DATADIR}/${PROJECT}/title/openrct2.parkseq\" OR EXISTS ${CMAKE_SOURCE_DIR}/data/title/)\n\
+                message(\"Using cached title sequences\")\n\
+            else () \n\
+                file(DOWNLOAD ${TITLE_SEQUENCE_URL} \$ENV{DESTDIR}${CMAKE_INSTALL_FULL_DATADIR}/${PROJECT}/title/title-sequences.zip EXPECTED_HASH SHA1=${TITLE_SEQUENCE_SHA1} SHOW_PROGRESS)\n\
+                execute_process(COMMAND \"${CMAKE_COMMAND}\" -E chdir \$ENV{DESTDIR}${CMAKE_INSTALL_FULL_DATADIR}/${PROJECT}/title/ \"${CMAKE_COMMAND}\" -E tar xf title-sequences.zip)\n\
+                file(REMOVE \$ENV{DESTDIR}${CMAKE_INSTALL_FULL_DATADIR}/${PROJECT}/title/title-sequences.zip)\n\
+            endif ()")
+    endif ()
+    if (DOWNLOAD_OBJECTS)
+        # If rct2.wtrcyan.json or data/object/ exists, assume all the objects are already present
+        install(CODE
+            "if (EXISTS \"\$ENV{DESTDIR}${CMAKE_INSTALL_FULL_DATADIR}/${PROJECT}/object/rct2/water/rct2.wtrcyan.json\" OR EXISTS ${CMAKE_SOURCE_DIR}/data/object/)\n\
+                message(\"Using cached objects\")\n\
+            else () \n\
+                file(DOWNLOAD ${OBJECTS_URL} \$ENV{DESTDIR}${CMAKE_INSTALL_FULL_DATADIR}/${PROJECT}/object/objects.zip EXPECTED_HASH SHA1=${OBJECTS_SHA1} SHOW_PROGRESS)\n\
+                execute_process(COMMAND \"${CMAKE_COMMAND}\" -E chdir \$ENV{DESTDIR}${CMAKE_INSTALL_FULL_DATADIR}/${PROJECT}/object/ \"${CMAKE_COMMAND}\" -E tar xf objects.zip)\n\
+                file(REMOVE \$ENV{DESTDIR}${CMAKE_INSTALL_FULL_DATADIR}/${PROJECT}/object/objects.zip)\n\
+            endif ()")
+    endif ()
+    install(TARGETS "libopenrct2" LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+                                  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+    if(NOT DISABLE_GUI)
+        install(TARGETS "openrct2" RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+    endif()
+    install(TARGETS "openrct2-cli" OPTIONAL RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/g2.dat" DESTINATION "${CMAKE_INSTALL_DATADIR}/openrct2")
+    install(DIRECTORY "data/" DESTINATION "${CMAKE_INSTALL_DATADIR}/openrct2")
+    install(FILES ${DOC_FILES} DESTINATION "${CMAKE_INSTALL_DOCDIR}")
+    install(FILES "distribution/linux/openrct2.appdata.xml" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/metainfo")
+    install(FILES "resources/logo/icon_x16.png" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/16x16/apps" RENAME "openrct2.png")
+    install(FILES "resources/logo/icon_x24.png" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/24x24/apps" RENAME "openrct2.png")
+    install(FILES "resources/logo/icon_x32.png" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/32x32/apps" RENAME "openrct2.png")
+    install(FILES "resources/logo/icon_x48.png" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/48x48/apps" RENAME "openrct2.png")
+    install(FILES "resources/logo/icon_x64.png" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/64x64/apps" RENAME "openrct2.png")
+    install(FILES "resources/logo/icon_x96.png" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/96x96/apps" RENAME "openrct2.png")
+    install(FILES "resources/logo/icon_x128.png" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/128x128/apps" RENAME "openrct2.png")
+    install(FILES "resources/logo/icon_x256.png" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/256x256/apps" RENAME "openrct2.png")
+    install(FILES "resources/logo/icon_flag.svg" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/scalable/apps" RENAME "openrct2.svg")
+    install(FILES "distribution/linux/openrct2.desktop" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications")
+    install(FILES "distribution/linux/openrct2-savegame.desktop" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications")
+    install(FILES "distribution/linux/openrct2-scenario.desktop" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications")
+    install(FILES "distribution/linux/openrct2-uri.desktop" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications")
+    install(FILES "distribution/linux/openrct2-mimeinfo.xml" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/mime/packages/" RENAME "openrct2.xml")
+    install(DIRECTORY "distribution/man/" DESTINATION "${CMAKE_INSTALL_MANDIR}/man6" FILES_MATCHING PATTERN "*.6")
 endif ()
-if (DOWNLOAD_OBJECTS)
-    # If rct2.wtrcyan.json or data/object/ exists, assume all the objects are already present
-    install(CODE
-        "if (EXISTS \"\$ENV{DESTDIR}${CMAKE_INSTALL_FULL_DATADIR}/${PROJECT}/object/rct2/water/rct2.wtrcyan.json\" OR EXISTS ${CMAKE_SOURCE_DIR}/data/object/)\n\
-            message(\"Using cached objects\")\n\
-        else () \n\
-            file(DOWNLOAD ${OBJECTS_URL} \$ENV{DESTDIR}${CMAKE_INSTALL_FULL_DATADIR}/${PROJECT}/object/objects.zip EXPECTED_HASH SHA1=${OBJECTS_SHA1} SHOW_PROGRESS)\n\
-            execute_process(COMMAND \"${CMAKE_COMMAND}\" -E chdir \$ENV{DESTDIR}${CMAKE_INSTALL_FULL_DATADIR}/${PROJECT}/object/ \"${CMAKE_COMMAND}\" -E tar xf objects.zip)\n\
-            file(REMOVE \$ENV{DESTDIR}${CMAKE_INSTALL_FULL_DATADIR}/${PROJECT}/object/objects.zip)\n\
-        endif ()")
-endif ()
-install(TARGETS "libopenrct2" LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-                              ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}")
-if(NOT DISABLE_GUI)
-    install(TARGETS "openrct2" RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
-endif()
-install(TARGETS "openrct2-cli" OPTIONAL RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/g2.dat" DESTINATION "${CMAKE_INSTALL_DATADIR}/openrct2")
-install(DIRECTORY "data/" DESTINATION "${CMAKE_INSTALL_DATADIR}/openrct2")
-install(FILES ${DOC_FILES} DESTINATION "${CMAKE_INSTALL_DOCDIR}")
-install(FILES "distribution/linux/openrct2.appdata.xml" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/metainfo")
-install(FILES "resources/logo/icon_x16.png" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/16x16/apps" RENAME "openrct2.png")
-install(FILES "resources/logo/icon_x24.png" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/24x24/apps" RENAME "openrct2.png")
-install(FILES "resources/logo/icon_x32.png" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/32x32/apps" RENAME "openrct2.png")
-install(FILES "resources/logo/icon_x48.png" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/48x48/apps" RENAME "openrct2.png")
-install(FILES "resources/logo/icon_x64.png" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/64x64/apps" RENAME "openrct2.png")
-install(FILES "resources/logo/icon_x96.png" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/96x96/apps" RENAME "openrct2.png")
-install(FILES "resources/logo/icon_x128.png" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/128x128/apps" RENAME "openrct2.png")
-install(FILES "resources/logo/icon_x256.png" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/256x256/apps" RENAME "openrct2.png")
-install(FILES "resources/logo/icon_flag.svg" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/scalable/apps" RENAME "openrct2.svg")
-install(FILES "distribution/linux/openrct2.desktop" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications")
-install(FILES "distribution/linux/openrct2-savegame.desktop" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications")
-install(FILES "distribution/linux/openrct2-scenario.desktop" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications")
-install(FILES "distribution/linux/openrct2-uri.desktop" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications")
-install(FILES "distribution/linux/openrct2-mimeinfo.xml" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/mime/packages/" RENAME "openrct2.xml")
-install(DIRECTORY "distribution/man/" DESTINATION "${CMAKE_INSTALL_MANDIR}/man6" FILES_MATCHING PATTERN "*.6")
