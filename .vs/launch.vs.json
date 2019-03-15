@@ -1,0 +1,38 @@
+{
+  "version": "0.2.1",
+  "defaults": {},
+  "configurations": [
+    {
+        "type": "cppdbg",
+        "name": "openrct2-install",
+        "project": "CMakeLists.txt",
+        "projectTarget": "openrct2",
+        "cwd": "${debugInfo.defaultWorkingDirectory}",
+        "program": "/var/tmp/build/60fc22b1-ab7b-a63b-a1e6-cb6eb7716acd/install/Linux-Debug/bin/openrct2",
+        "MIMode": "gdb",
+        "externalConsole": true,
+        "remoteMachineName": "${debugInfo.remoteMachineName}",
+        "pipeTransport": {
+            "pipeProgram": "${debugInfo.shellexecPath}",
+            "pipeArgs": [
+                "/s",
+                "${debugInfo.remoteMachineId}",
+                "/p",
+                "${debugInfo.parentProcessId}",
+                "/c",
+                "export DISPLAY=:1;${debuggerCommand}",
+                "--tty=${debugInfo.tty}"
+            ],
+            "debuggerPath": "/usr/bin/gdb"
+        },
+        "setupCommands": [
+            {
+                "text": "-enable-pretty-printing",
+                "ignoreFailures": true
+            }
+        ],
+        "visualizerFile": "${debugInfo.linuxNatvisPath}",
+        "showDisplayString": true
+    }
+  ]
+}

@@ -1,21 +1,42 @@
 {
-    "configurations": [
-        {
-            "name": "x64-Debug",
-            "inheritEnvironments": [ "msvc_x64_x64" ],
-            "generator": "Ninja",
-            "buildRoot": "${env.LOCALAPPDATA}\\CMakeBuild\\${workspaceHash}\\build\\${name}",
-            "configurationType": "Debug",
-            "variables": [
-                {
-                    "name": "VCPKG_TARGET_TRIPLET",
-                    "value": "x64-windows-winssl"
-                },
-                {
-                    "name": "CMAKE_TOOLCHAIN_FILE",
-                    "value": "C:\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"
-                }
-            ]
-        }
-    ]
+  "configurations": [
+    {
+        "name": "x64-Debug",
+        "inheritEnvironments": [ "msvc_x64" ],
+        "generator": "Ninja",
+        "buildRoot": "${env.LOCALAPPDATA}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+        "installRoot": "${env.LOCALAPPDATA}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+        "configurationType": "Debug",
+        "cmakeCommandArgs": "",
+        "variables": [
+            {
+                "name": "VCPKG_TARGET_TRIPLET",
+                "value": "x64-windows-static-rct",
+                "type": "STRING"
+            }
+        ]
+    },
+    {
+        "name": "Linux-Debug",
+        "generator": "Ninja",
+        "configurationType": "Debug",
+        "buildRoot": "${env.LOCALAPPDATA}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+        "installRoot": "${env.LOCALAPPDATA}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+        "cmakeExecutable": "/usr/local/bin/cmake",
+        "remoteCopySourcesExclusionList": [ ".vs", ".git" ],
+        "cmakeCommandArgs": "-DDISABLE_TTF=TRUE -DCMAKE_INSTALL_PREFIX=/var/tmp/build/${workspaceHash}/install/${name}",
+        "buildCommandArgs": "",
+        "ctestCommandArgs": "",
+        "inheritEnvironments": [ "linux_x64" ],
+        "remoteMachineName": "${defaultRemoteMachineName}",
+        "remoteCMakeListsRoot": "/var/tmp/src/${workspaceHash}/${name}",
+        "remoteBuildRoot": "/var/tmp/build/${workspaceHash}/build/${name}",
+        "remoteInstallRoot": "/var/tmp/build/${workspaceHash}/install/${name}",
+        "remoteCopySources": true,
+        "rsyncCommandArgs": "-t --delete --delete-excluded",
+        "remoteCopyBuildOutput": false,
+        "remoteCopySourcesMethod": "rsync",
+        "variables": []
+    }
+  ]
 }
