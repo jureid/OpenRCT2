@@ -86,10 +86,16 @@ set(COMMON_TEST_SOURCES
 
 # Create a re-usable library to save some compilation time
 add_library(test-common STATIC ${COMMON_TEST_SOURCES})
+target_link_libraries(test-common ZLIB::ZLIB)
 
 # Setup testdata. It should be fine here, as the only way to reach here is by explicitly requesting tests.
-execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink "${CMAKE_CURRENT_LIST_DIR}/testdata" "${CMAKE_CURRENT_BINARY_DIR}/testdata")
-install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" -E create_symlink \"\$ENV{DESTDIR}${CMAKE_INSTALL_FULL_DATADIR}/openrct2\" \"${CMAKE_CURRENT_BINARY_DIR}/data\")")
+if (WIN32)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_LIST_DIR}/testdata" "${CMAKE_CURRENT_BINARY_DIR}/testdata")
+    install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" -E copy_directory \"\$ENV{DESTDIR}${CMAKE_INSTALL_FULL_DATADIR}/openrct2\" \"${CMAKE_CURRENT_BINARY_DIR}/data\")")
+else ()
+    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink "${CMAKE_CURRENT_LIST_DIR}/testdata" "${CMAKE_CURRENT_BINARY_DIR}/testdata")
+    install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" -E create_symlink \"\$ENV{DESTDIR}${CMAKE_INSTALL_FULL_DATADIR}/openrct2\" \"${CMAKE_CURRENT_BINARY_DIR}/data\")")
+endif ()
 
 if (NOT MINGW AND NOT MSVC)
     # For unicode code page conversion (required for ini and string tests)
@@ -111,7 +117,7 @@ set(SAWYERCODING_TEST_SOURCES
         "${ROOT_DIR}/src/openrct2/util/SawyerCoding.cpp"
         )
 add_executable(test_sawyercoding ${SAWYERCODING_TEST_SOURCES})
-target_link_libraries(test_sawyercoding ${GTEST_LIBRARIES} test-common ${LDL} z)
+target_link_libraries(test_sawyercoding ${GTEST_LIBRARIES} test-common ${LDL})
 target_link_platform_libraries(test_sawyercoding)
 add_test(NAME sawyercoding COMMAND test_sawyercoding)
 
@@ -125,7 +131,7 @@ if (UNIX AND NOT ${CMAKE_SYSTEM_NAME} MATCHES "BSD")
     # Include libdl for dlopen
     set(LDL dl)
 endif ()
-target_link_libraries(test_languagepack ${GTEST_LIBRARIES} test-common ${LDL} z)
+target_link_libraries(test_languagepack ${GTEST_LIBRARIES} test-common ${LDL} ZLIB::ZLIB)
 target_link_platform_libraries(test_languagepack)
 add_test(NAME languagepack COMMAND test_languagepack)
 
@@ -140,7 +146,7 @@ set(INI_TEST_SOURCES
         )
 add_executable(test_ini ${INI_TEST_SOURCES})
 SET_CHECK_CXX_FLAGS(test_ini)
-target_link_libraries(test_ini ${GTEST_LIBRARIES} test-common ${LDL} z)
+target_link_libraries(test_ini ${GTEST_LIBRARIES} test-common ${LDL} ZLIB::ZLIB)
 target_link_platform_libraries(test_ini)
 add_test(NAME ini COMMAND test_ini)
 
@@ -150,7 +156,7 @@ set(STRING_TEST_SOURCES
         )
 add_executable(test_string ${STRING_TEST_SOURCES})
 SET_CHECK_CXX_FLAGS(test_string)
-target_link_libraries(test_string ${GTEST_LIBRARIES} test-common ${LDL} z)
+target_link_libraries(test_string ${GTEST_LIBRARIES} test-common ${LDL})
 target_link_platform_libraries(test_string)
 add_test(NAME string COMMAND test_string)
 
@@ -158,7 +164,7 @@ add_test(NAME string COMMAND test_string)
 set(STRING_TEST_SOURCES "${CMAKE_CURRENT_LIST_DIR}/Localisation.cpp")
 add_executable(test_localisation ${STRING_TEST_SOURCES})
 SET_CHECK_CXX_FLAGS(test_localisation)
-target_link_libraries(test_localisation ${GTEST_LIBRARIES} test-common ${LDL} z)
+target_link_libraries(test_localisation ${GTEST_LIBRARIES} test-common ${LDL})
 target_link_platform_libraries(test_localisation)
 add_test(NAME localisation COMMAND test_localisation)
 
@@ -185,7 +191,7 @@ set(RIDE_RATINGS_TEST_SOURCES "${CMAKE_CURRENT_LIST_DIR}/RideRatings.cpp"
                               "${CMAKE_CURRENT_LIST_DIR}/TestData.cpp")
 add_executable(test_ride_ratings ${RIDE_RATINGS_TEST_SOURCES})
 SET_CHECK_CXX_FLAGS(test_ride_ratings)
-target_link_libraries(test_ride_ratings ${GTEST_LIBRARIES} libopenrct2 ${LDL} z)
+target_link_libraries(test_ride_ratings ${GTEST_LIBRARIES} libopenrct2 ${LDL})
 target_link_platform_libraries(test_ride_ratings)
 add_test(NAME ride_ratings COMMAND test_ride_ratings)
 
@@ -194,7 +200,7 @@ set(MULTILAUNCH_TEST_SOURCES "${CMAKE_CURRENT_LIST_DIR}/MultiLaunch.cpp"
                              "${CMAKE_CURRENT_LIST_DIR}/TestData.cpp")
 add_executable(test_multilaunch ${MULTILAUNCH_TEST_SOURCES})
 SET_CHECK_CXX_FLAGS(test_multilaunch)
-target_link_libraries(test_multilaunch ${GTEST_LIBRARIES} libopenrct2 ${LDL} z)
+target_link_libraries(test_multilaunch ${GTEST_LIBRARIES} libopenrct2 ${LDL})
 target_link_platform_libraries(test_multilaunch)
 add_test(NAME multilaunch COMMAND test_multilaunch)
 
@@ -203,7 +209,7 @@ set(TILE_ELEMENT_TEST_SOURCES "${CMAKE_CURRENT_LIST_DIR}/TileElements.cpp"
                               "${CMAKE_CURRENT_LIST_DIR}/TestData.cpp")
 add_executable(test_tile_elements ${TILE_ELEMENT_TEST_SOURCES})
 SET_CHECK_CXX_FLAGS(test_tile_elements)
-target_link_libraries(test_tile_elements ${GTEST_LIBRARIES} libopenrct2 ${LDL} z)
+target_link_libraries(test_tile_elements ${GTEST_LIBRARIES} libopenrct2 ${LDL})
 target_link_platform_libraries(test_tile_elements)
 add_test(NAME tile_elements COMMAND test_tile_elements)
 
@@ -213,7 +219,7 @@ if (NOT DISABLE_NETWORK)
                                   "${CMAKE_CURRENT_LIST_DIR}/TestData.cpp")
     add_executable(test_replays ${REPLAY_TEST_SOURCES})
     SET_CHECK_CXX_FLAGS(test_replays)
-    target_link_libraries(test_replays ${GTEST_LIBRARIES} libopenrct2 ${LDL} z)
+    target_link_libraries(test_replays ${GTEST_LIBRARIES} libopenrct2 ${LDL})
     target_link_platform_libraries(test_replays)
     add_test(NAME replay_tests COMMAND test_replays)
 endif ()
@@ -223,7 +229,7 @@ set(PATHFINDING_TEST_SOURCES  "${CMAKE_CURRENT_LIST_DIR}/Pathfinding.cpp"
                               "${CMAKE_CURRENT_LIST_DIR}/TestData.cpp")
 add_executable(test_pathfinding ${PATHFINDING_TEST_SOURCES})
 SET_CHECK_CXX_FLAGS(test_pathfinding)
-target_link_libraries(test_pathfinding ${GTEST_LIBRARIES} libopenrct2 ${LDL} z)
+target_link_libraries(test_pathfinding ${GTEST_LIBRARIES} libopenrct2 ${LDL})
 target_link_platform_libraries(test_pathfinding)
 add_test(NAME pathfinding COMMAND test_pathfinding)
 
@@ -232,6 +238,6 @@ set(NETWORKLOADSAVE_TEST_SOURCES "${CMAKE_CURRENT_LIST_DIR}/NetworkLoadSave.cpp"
                                  "${CMAKE_CURRENT_LIST_DIR}/TestData.cpp")
 add_executable(test_networkloadsave ${NETWORKLOADSAVE_TEST_SOURCES})
 SET_CHECK_CXX_FLAGS(test_networkloadsave)
-target_link_libraries(test_networkloadsave ${GTEST_LIBRARIES} libopenrct2 ${LDL} z)
+target_link_libraries(test_networkloadsave ${GTEST_LIBRARIES} libopenrct2 ${LDL})
 target_link_platform_libraries(test_networkloadsave)
 add_test(NAME networkloadsave COMMAND test_networkloadsave)

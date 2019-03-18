@@ -14,9 +14,7 @@
 
 #include <gtest/gtest.h>
 
-#ifndef _WIN32
-const language_descriptor LanguagesDescriptors[] = {};
-#endif
+const language_descriptor LanguagesDescriptors[LANGUAGE_COUNT] = {};
 
 class LanguagePackTest : public testing::Test
 {

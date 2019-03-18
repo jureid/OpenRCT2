@@ -7,7 +7,7 @@
         "buildRoot": "${env.LOCALAPPDATA}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
         "installRoot": "${env.LOCALAPPDATA}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
         "configurationType": "Debug",
-        "cmakeCommandArgs": "",
+        "cmakeCommandArgs": "-DWITH_TESTS=ON -DSYSTEM_GTEST=ON",
         "variables": [
             {
                 "name": "VCPKG_TARGET_TRIPLET",
