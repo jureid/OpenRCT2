@@ -38,7 +38,7 @@ option(USE_MMAP "Use mmap to try loading rct2's data segment into memory.")
 
 option(DISABLE_HTTP_TWITCH "Disable HTTP and Twitch support.")
 option(DISABLE_NETWORK "Disable multiplayer functionality. Mainly for testing.")
-option(DISABLE_TTF "Disable support for TTF provided by freetype2.")
+option(DISABLE_TTF "Disable support for TTF provided by freetype2." ON)
 option(ENABLE_LIGHTFX "Enable lighting effects." ON)
 
 option(DISABLE_GUI "Don't build GUI. (Headless only.)")

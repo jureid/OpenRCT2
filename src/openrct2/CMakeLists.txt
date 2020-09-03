@@ -7,6 +7,7 @@ endif ()
 # Needed for linking with non-broken OpenSSL on Apple platforms
 if (APPLE)
     set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:/usr/local/opt/openssl/lib/pkgconfig")
+    LINK_DIRECTORIES(/usr/local/lib)
 endif ()
 
 # Third party libraries
@@ -15,18 +16,24 @@ if (MSVC)
     find_package(png 1.6 REQUIRED)
     find_package(zlib REQUIRED)
 
-    find_path(LIBZIP_INCLUDE_DIRS zip.h)
-    find_library(LIBZIP_LIBRARIES zip)
+    find_package(libzip CONFIG REQUIRED)
+    set(LIBZIP_LIBRARIES zip)
+    target_link_libraries(${PROJECT} ${LIBZIP_LIBRARIES})
+
 else ()
-    find_package (Jansson)
+    find_package(jansson CONFIG REQUIRED)
+    set(JANSSON_LIBRARIES jansson::jansson)
+    target_link_libraries(${PROJECT} jansson::jansson)
+
     if (NOT Jansson_FOUND)
         PKG_CHECK_MODULES(JANSSON REQUIRED jansson>=2.5)
     endif ()
 
     ## FIXME
     #PKG_CHECK_MODULES(LIBZIP REQUIRED libzip>=1.0)
-    find_path(LIBZIP_INCLUDE_DIRS zip.h)
-    find_library(LIBZIP_LIBRARIES zip)
+    find_package(libzip CONFIG REQUIRED)
+    set(LIBZIP_LIBRARIES zip)
+    target_link_libraries(${PROJECT} ${LIBZIP_LIBRARIES})
 
     find_package(ZLIB)
     if (NOT ZLIB_FOUND)
@@ -164,7 +171,7 @@ if (NOT DISABLE_TTF)
             target_link_libraries(${PROJECT} ${FONTCONFIG_STATIC_LIBRARIES})
         endif ()
     else ()
-        target_link_libraries(${PROJECT} ${FREETYPE_LIBRARIES})
+        target_link_libraries(${PROJECT} ${FREETYPE_LINK_LIBRARIES})
         if (UNIX AND NOT APPLE)
             target_link_libraries(${PROJECT} ${FONTCONFIG_LIBRARIES})
         endif ()

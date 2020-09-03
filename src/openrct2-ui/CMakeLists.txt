@@ -4,6 +4,10 @@ if (CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
     message(FATAL_ERROR "Building in-source is not supported! Create a build dir and remove ${CMAKE_SOURCE_DIR}/CMakeCache.txt")
 endif ()
 
+IF(APPLE)
+   LINK_DIRECTORIES(/usr/local/lib)
+ENDIF()
+
 # Options
 option(DISABLE_OPENGL "Disable OpenGL support.")
 
@@ -13,6 +17,7 @@ if (MSVC)
     find_package(SDL2 REQUIRED)
     find_library(SPEEX_LDFLAGS libspeexdsp)
 else ()
+    find_package(Jansson)
     find_package(SDL2 CONFIG)
     if (NOT SDL2_FOUND)
         PKG_CHECK_MODULES(SDL2 REQUIRED sdl2)
