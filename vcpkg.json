@@ -1,0 +1,11 @@
+{
+	"name": "openrct2",
+	"version-string": "0.0.1",
+	"dependencies": [
+            "jansson",
+            "sdl2", 
+            "libpng", 
+            "icu", 
+            "libzip"
+        ]
+}
